@@ -21,7 +21,6 @@ class AuthService {
         } catch (Exception $e) {
             throw $e;
         }
-        
         return $id;
     }
 
@@ -32,7 +31,7 @@ class AuthService {
 
         $token = generateToken();
         $payload = ['user_id' => $user['id'], 'email' => $user['email']];
-        $this->redis->setToken($token, $payload, 3600); // 1h TTL
+        $this->redis->setToken($token, $payload, ); // 1h TTL
         return ['token' => $token, 'user' => $user];
     }
     

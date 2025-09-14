@@ -2,7 +2,7 @@
     "name": "user/profile",
     "autoload": {
         "psr-4": {
-            "User\\Profile\\": "src/"
+            "User\\Profile\\": "php/"
         }
     },
     "authors": [

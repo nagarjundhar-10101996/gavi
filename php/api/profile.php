@@ -19,11 +19,11 @@ $token = getAuthToken();
 $service = new AuthService();
 $payload = $service->validateToken($token);
 if (!$payload) {
-    echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+    echo json_encode(['success' => false, 'message' => 'Unauthorized'], JSON_UNESCAPED_UNICODE);
     exit;
 }
 // Fetch user data
 $pdo = getMysqlPDO();
 $userRepo = new UserRepository($pdo);
 $user = $userRepo->getUserById($payload['user_id']);
-echo json_encode(['success' => true, 'user' => $user]);
+echo json_encode(['success' => true, 'user' => $user],JSON_UNESCAPED_UNICODE);

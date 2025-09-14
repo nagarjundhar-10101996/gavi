@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Signup</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <style>
+    .position-relative { position: relative; }
+
+    /* Input padding to prevent overlapping checkmarks */
+    .position-relative input {
+      padding-right: 65px; /* extra space for checkmark + eye toggle */
+    }
+
+    /* Unified checkmark styling */
+   .checkmark {
+      position: absolute;
+      right: -24px;
+      top: 80%;
+      transform: translateY(-50%);
+      font-size: 1.2em;
+      color: green;
+      display: none;
+      pointer-events: none;
+      font-family: Arial, sans-serif; /* consistent UTF-8 rendering */
+    }
+
+
+    /* Password strength bar and text */
+    #passwordStrength {
+      margin-top: 5px;
+      height: 6px;
+      border-radius: 3px;
+      transition: width 0.3s;
+    }
+
+    #passwordStrengthText {
+      margin-top: 5px;
+      font-weight: bold;
+    }
+
+    #passwordTooltip {
+      font-size: 0.875em;
+      color: #6c757d;
+      margin-top: 5px;
+    }
+  </style>
+</head>
+<body class="container py-5">
+  <h2>Register</h2>
+  <form id="signupForm" novalidate>
+    <!-- Email -->
+    <div class="mb-3 position-relative">
+      <label>Email</label>
+      <input type="email" id="email" name="email" class="form-control" required>
+      <span id="emailCheck" class="checkmark">✓</span>
+      <div class="invalid-feedback" id="emailError"></div>
+    </div>
+
+    <!-- Name -->
+    <div class="mb-3 position-relative">
+      <label>Name</label>
+      <input type="text" id="name" name="name" class="form-control" required>
+      <span id="nameCheck" class="checkmark">✓</span>
+      <div class="invalid-feedback" id="nameError"></div>
+    </div>
+
+    <!-- Password -->
+    <div class="mb-3 position-relative">
+      <label>Password</label>
+      <input type="password" id="password" name="password" class="form-control" required>
+      <span id="passwordCheck" class="checkmark">✓</span>
+      <div id="passwordStrengthText"></div>
+      <div id="passwordStrength" class="bg-danger w-0"></div>
+      <div id="passwordTooltip">Password must be 8+ characters, include uppercase, lowercase, number & special character.</div>
+      <div class="invalid-feedback" id="passwordError"></div>
+    </div>
+
+    <button type="submit" id="submitBtn" class="btn btn-primary" disabled>Register</button>
+  </form>
+
+  <script>
+    $(document).ready(function () {
+
+      function validateField(field, errorDiv, validatorFn, errorMsg) {
+        const value = $(field).val().trim();
+        $(field).removeClass('is-invalid is-valid');
+        $(errorDiv).text('');
+
+        if (!value) {
+          $(errorDiv).text(errorMsg || 'This field is required');
+          $(field).addClass('is-invalid');
+          return false;
+        } else if (validatorFn && !validatorFn(value)) {
+          $(errorDiv).text(errorMsg);
+          $(field).addClass('is-invalid');
+          return false;
+        } else {
+          $(field).addClass('is-valid');
+          return true;
+        }
+      }
+
+      function getPasswordStrength(pw) {
+        let strength = 0;
+        if (pw.length >= 8) strength++;
+        if (/[A-Z]/.test(pw)) strength++;
+        if (/[a-z]/.test(pw)) strength++;
+        if (/\d/.test(pw)) strength++;
+        if (/[\W_]/.test(pw)) strength++;
+        return strength;
+      }
+
+      function isStrongPassword(pw) {
+        return getPasswordStrength(pw) === 5;
+      }
+
+      function updateStrengthMeter(pw) {
+        const strength = getPasswordStrength(pw);
+        const meter = $('#passwordStrength');
+        const text = $('#passwordStrengthText');
+        let color = 'bg-danger';
+        let width = '20%';
+        let strengthText = 'Weak';
+
+        if (strength <= 2) {
+          color = 'bg-danger'; width = '20%'; strengthText = 'Weak';
+        } else if (strength === 3 || strength === 4) {
+          color = 'bg-warning'; width = '60%'; strengthText = 'Medium';
+        } else if (strength === 5) {
+          color = 'bg-success'; width = '100%'; strengthText = 'Strong';
+        }
+
+        meter.removeClass('bg-danger bg-warning bg-success').addClass(color).css('width', width);
+        text.text(strengthText);
+      }
+
+      function isValidName(name) {
+        return /^[A-Za-z\s]{2,}$/.test(name);
+      }
+
+      function toggleCheckmark(fieldId, isValid) {
+        $(`#${fieldId}Check`).toggle(isValid);
+      }
+
+      // Real-time validation
+      $('#email').on('input', function() {
+        const valid = validateField(this, '#emailError', val => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val), 'Invalid email format');
+        toggleCheckmark('email', valid);
+        toggleSubmit();
+      });
+
+      $('#name').on('input', function() {
+        const valid = validateField(this, '#nameError', isValidName, 'Name must be letters only, min 2 chars');
+        toggleCheckmark('name', valid);
+        toggleSubmit();
+      });
+
+      $('#password').on('input', function() {
+        const pw = $(this).val();
+        const valid = isStrongPassword(pw);
+        toggleCheckmark('password', valid);
+        updateStrengthMeter(pw);
+        validateField(this, '#passwordError', isStrongPassword, 'Password must be 8+ chars, include uppercase, lowercase, number & special char');
+        toggleSubmit();
+      });
+
+      function toggleSubmit() {
+        const allValid = 
+          validateField('#email', '#emailError', val => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) &&
+          validateField('#name', '#nameError', isValidName) &&
+          validateField('#password', '#passwordError', isStrongPassword);
+        $('#submitBtn').prop('disabled', !allValid);
+      }
+
+      // Form submission
+      $('#signupForm').on('submit', function (e) {
+        e.preventDefault();
+        const formData = {
+          email: $('#email').val().trim(),
+          name: $('#name').val().trim(),
+          password: $('#password').val()
+        };
+
+        $.ajax({
+          url: '../php/api/register.php',
+          type: 'POST',
+          contentType: 'application/json',
+          dataType: 'json',
+          data: JSON.stringify(formData),
+          success: function (res) {
+            if (res.success) {
+              alert(res.message);
+              window.location.href = '../html/login.html';
+            } else {
+              if (res.message.toLowerCase().includes('email')) {
+                $('#emailError').text(res.message);
+                $('#email').removeClass('is-valid').addClass('is-invalid');
+              } else if (res.message.toLowerCase().includes('password')) {
+                $('#passwordError').text(res.message);
+                $('#password').removeClass('is-valid').addClass('is-invalid');
+              } else if (res.message.toLowerCase().includes('name')) {
+                $('#nameError').text(res.message);
+                $('#name').removeClass('is-valid').addClass('is-invalid');
+              } else {
+                alert(res.message);
+              }
+            }
+          },
+          error: function (xhr, status, error) {
+            console.error('AJAX error:', error);
+            alert('Something went wrong during signup.');
+          }
+        });
+      });
+
+    });
+  </script>
+</body>
+</html>

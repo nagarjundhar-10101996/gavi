@@ -1,14 +1,12 @@
 <?php
 require_once  __DIR__ . '/../config.php';
-
-
 function getMysqlPDO() {
     $config = require __DIR__ . '/../config.php';
-    $host = $config['db']['host'];
-    $db   = $config['db']['db'];
-    $user = $config['db']['user'];
-    $pass = $config['db']['pass'];
-    $charset = $config['db']['charset'];
+    $host = $_ENV['DB_HOST'];
+    $db   = $_ENV['DB_NAME'];
+    $user = $_ENV['DB_USER'];
+    $pass = $_ENV['DB_PASS'];
+    $charset = $_ENV['DB_CHARSET'];
     $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
     $opts = [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,

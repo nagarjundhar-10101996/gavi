@@ -4,10 +4,13 @@ class UserRepository {
     public function __construct($pdo) { $this->pdo = $pdo; }
 
     public function createUser($email, $passwordHash, $name) {
-        $sql = "INSERT INTO users (email, password_hash, name) VALUES (?, ?, ?)";
-        $stmt = $this->pdo->prepare($sql);
+        $stmt = $this->pdo->prepare("INSERT INTO users (email, password_hash, name) VALUES (:email, :password_hash, :name)");
         try {
-            $stmt->execute([$email, $passwordHash, $name]);
+            $stmt->execute([
+            ':email' => $email,
+            ':password_hash' => $passwordHash,
+            ':name' => $name
+        ]);
         } catch (PDOException $e) {
             
             if ($e->errorInfo[1] == 1062) 
@@ -23,14 +26,14 @@ class UserRepository {
     }
 
     public function getUserByEmail($email) {
-        $stmt = $this->pdo->prepare("SELECT * FROM users WHERE email = ?");
-        $stmt->execute([$email]);
+        $stmt = $this->pdo->prepare("SELECT * FROM users WHERE email = :email");
+        $stmt->execute([':email' => $email]);
         return $stmt->fetch();
     }
 
     public function getUserById($id) {
-        $stmt = $this->pdo->prepare("SELECT * FROM users WHERE id = ?");
-        $stmt->execute([$id]);
+        $stmt = $this->pdo->prepare("SELECT * FROM users WHERE id = :id");
+        $stmt->execute([':id' => $id]);
         return $stmt->fetch();
     }
 }
