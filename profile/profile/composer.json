@@ -1,0 +1,16 @@
+{
+    "name": "user/profile",
+    "autoload": {
+        "psr-4": {
+            "User\\Profile\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "user"
+        }
+    ],
+    "require": {
+        "mongodb/mongodb": "^2.1"
+    }
+}
